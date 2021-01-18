@@ -249,4 +249,7 @@ jobs:
           max_attempts: 3
           command: |
             cd libtorrent-rasterbar-*/test
-            b2 link=static -j2 cxxflags=-std=c++11
+            b2 link=static cxxflags=-std=c++11
+            cd ..
+            b2 install cxxflags=-std=c++11 --prefix=test-install-root
+            cat test-install-root/lib/pkgconfig/libtorrent-rasterbar.pc
