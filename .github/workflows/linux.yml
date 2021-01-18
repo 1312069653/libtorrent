@@ -236,6 +236,7 @@ jobs:
 
       - name: test-tarball (install)
         run: |
+          tar xvzf libtorrent-rasterbar-*.tar.gz
           cd libtorrent-rasterbar-*/
           b2 install cxxflags=-std=c++11 --prefix=test-install-root
           cat test-install-root/share/pkgconfig/libtorrent-rasterbar.pc
@@ -255,7 +256,6 @@ jobs:
 
       - name: test-tarball (make)
         run: |
-          tar xvzf libtorrent-rasterbar-*.tar.gz
           cd libtorrent-rasterbar-*/
           ./configure --enable-python-binding --enable-examples=yes --enable-encryption --enable-tests=yes
           make -j2
