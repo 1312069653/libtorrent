@@ -792,6 +792,7 @@ rule generate-pkg-config ( properties * )
 {
 	import property-set ;
 	import project ;
+	import version ;
 
 	local l = [ project.target [ project.module-name "." ] ] ;
 
@@ -803,9 +804,35 @@ rule generate-pkg-config ( properties * )
 	props = $(props[1]) ;
 
 	local FULL_VERSION = 1.2.12 ;
-	local p = [ package.paths libtorrent : $(properties) ] ;
-	local libdir = [ $(p).libdir ] ;
-	local includedir = [ $(p).includedir ] ;
+	local libdir ;
+	local includedir ;
+
+	# package.paths was introduced in boost-1.70 (2018.02)
+	# however, boost build's versioning scheme changed in boost-1.71 to version
+	# 4.0
+	local boost-build-version = [ SPLIT_BY_CHARACTERS [ version.boost-build ] : "-" ] ;
+	if [ version.version-less [ SPLIT_BY_CHARACTERS $(boost-build-version[1]) : "." ] : 2018 01 ]
+	{
+		import option ;
+		import property ;
+		local prefix = [ option.get prefix : [ property.select <install-default-prefix> : $(properties) ] ] ;
+		prefix = $(prefix:G=) ;
+		# Or some likely defaults if neither is given.
+		if ! $(prefix)
+		{
+			if [ modules.peek : NT ] { prefix = C:\\$(package-name) ; }
+			else if [ modules.peek : UNIX ] { prefix = /usr/local ; }
+		}
+
+		libdir = $(prefix)/lib ;
+		includedir = $(prefix)/include ;
+	}
+	else
+	{
+		local p = [ package.paths libtorrent : $(properties) ] ;
+		libdir = [ $(p).libdir ] ;
+		includedir = [ $(p).includedir ] ;
+	}
 
 	local libname = [ virtual-target.add-prefix-and-suffix "torrent-rasterbar" : SHARED_LIB : $(props) ] ;
 	libname = "$(libname).$(VERSION)" ;
